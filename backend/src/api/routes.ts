@@ -1,8 +1,8 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
+import { swaggerUI } from '@hono/swagger-ui';
 import type { PrismaClient } from '@/generated/prisma/client.js';
-import listRouter from './lists.js';
-import openapi from './openapi.js';
 import { auth } from '@/common/auth.js';
+import listRouter from './lists.js';
 
 type AppVariables = {
   prisma: PrismaClient;
@@ -12,36 +12,42 @@ type AppVariables = {
 
 const routes = new OpenAPIHono<{ Variables: AppVariables }>();
 
-routes.route('/', openapi);
+// --- Rotas da API ---
+routes.route('/api/lists', listRouter);
 
-routes.on(['POST', 'GET'], '/api/auth/*', (c) => {
-  return auth.handler(c.req.raw);
-});
-
+// --- Rotas de Autenticação ---
+routes.on(['POST', 'GET'], '/api/auth/*', (c) => auth.handler(c.req.raw));
 routes.get('/api/auth/session', (c) => {
   const user = c.get('user');
-  if (!user) {
-    return c.json({ error: 'Unauthorized' }, 401);
-  }
+  if (!user) return c.json({ error: 'Unauthorized' }, 401);
   return c.json(c.get('session'));
 });
-
 routes.post('/api/register', async (c) => {
   const { email, password } = await c.req.json();
-  if (!email || !password) {
-    return c.json({ error: 'Email and password are required' }, 400);
-  }
+  if (!email || !password) return c.json({ error: 'Email and password are required' }, 400);
   try {
-    const user = await auth.api.signUpEmail({
-      body: { email, password, name: email.split('@')[0] },
-      asResponse: true,
-    });
-    return user;
+    return await auth.api.signUpEmail({ body: { email, password, name: email.split('@')[0] }, asResponse: true });
   } catch (error) {
     return c.json({ error: 'Registration failed' }, 400);
   }
 });
 
-routes.route('/api/lists', listRouter);
+// --- Documentação OpenAPI ---
+routes.get('/swagger', swaggerUI({ url: '/docs' }));
+
+routes.doc('/docs', {
+  openapi: '3.0.0',
+  info: {
+    version: '1.0.0',
+    title: 'Listinha API',
+    description: 'API para gerenciar listas de compras com orçamento',
+  },
+  servers: [{ url: 'http://localhost:3000', description: 'Development' }],
+  tags: [
+    { name: 'Lists', description: 'Endpoints para listas de compras' },
+    { name: 'Items', description: 'Endpoints para itens da lista' },
+    { name: 'Auth', description: 'Endpoints de autenticação' },
+  ],
+});
 
 export default routes;
