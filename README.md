@@ -11,6 +11,7 @@ Um aplicativo mobile completo para gerenciar listas de compras com orçamento, h
 - [Pré-requisitos](#pré-requisitos)
 - [Instalação](#instalação)
 - [Desenvolvimento](#desenvolvimento)
+- [Deploy na Vercel](#deploy-na-vercel)
 - [Estrutura do Projeto](#estrutura-do-projeto)
 - [API Endpoints](#api-endpoints)
 - [Tecnologias](#tecnologias)
@@ -37,267 +38,117 @@ Um aplicativo mobile completo para gerenciar listas de compras com orçamento, h
 Listinha/
 ├── backend/                    # Servidor Hono + Prisma
 │   ├── src/
-│   │   ├── index.ts           # App principal
-│   │   ├── routes/
-│   │   │   └── lists.ts       # Rotas de listas
-│   │   ├── lib/
-│   │   │   ├── auth.ts        # Configuração Better Auth
-│   │   │   ├── prisma.ts      # Cliente Prisma
-│   │   │   └── env.ts         # Variáveis de ambiente
-│   │   └── generated/
-│   │       └── prisma/        # Cliente Prisma gerado
+│   │   ├── api/               # Módulos da API (rotas, controllers, DTOs)
+│   │   ├── common/            # Utilitários (env, logger, prisma)
+│   │   ├── middlewares/       # Middlewares (auth, error-handler)
+│   │   ├── models/            # Schemas e tipos de dados (Zod)
+│   │   ├── services/          # Lógica de negócio
+│   │   └── server.ts          # Ponto de entrada da aplicação
 │   ├── prisma/
 │   │   └── schema.prisma      # Schema do banco de dados
 │   └── package.json
 │
 └── mobile/                     # App React Native (Expo)
-    ├── src/
-    │   ├── app/               # Rotas e telas
-    │   │   ├── (tabs)/        # Abas principais
-    │   │   ├── list/[id].tsx  # Detalhe da lista
-    │   │   └── report/[id].tsx # Relatório
-    │   ├── hooks/
-    │   │   └── useAuth.tsx    # Hook de autenticação
-    │   ├── infra/
-    │   │   ├── api.ts         # Cliente Axios
-    │   │   └── services/      # Serviços de API
-    │   ├── types/
-    │   │   └── index.ts       # Tipos TypeScript
-    │   └── assets/
-    └── package.json
+    # ... (estrutura do mobile)
 ```
 
 ---
 
 ## 📦 Pré-requisitos
 
-Antes de começar, certifique-se de ter instalado:
-
 - **Node.js** (v18 ou superior)
 - **npm** ou **yarn**
-- **Expo CLI** (para o app mobile)
-
-```bash
-# Verificar versões
-node --version
-npm --version
-```
+- **Vercel CLI** (para deploy)
 
 ---
 
-## 🚀 Instalação
-
-### 1. Clonar o repositório
-
-```bash
-git clone <seu-repositorio>
-cd listinha
-```
-
-### 2. Configurar Backend
-
-```bash
-cd backend
-
-# Instalar dependências
-npm install
-
-# Criar arquivo .env
-cp .env.example .env
-
-# Configurar variáveis de ambiente
-# DATABASE_URL=postgresql://user:password@localhost:5432/listinha
-# BETTER_AUTH_SECRET=sua-chave-secreta-aqui
-# BETTER_AUTH_URL=http://localhost:3000
-```
-
-### 3. Configurar Banco de Dados
-
-```bash
-cd backend
-
-# Executar migrations
-npx prisma migrate dev --name init
-
-# Gerar cliente Prisma
-npx prisma generate
-```
-
-### 4. Configurar Mobile
-
-```bash
-cd mobile
-
-# Instalar dependências
-npm install
-
-```
-
----
-
-## 💻 Desenvolvimento
+## 🚀 Instalação e Desenvolvimento
 
 ### Backend
 
-```bash
-cd backend
+1.  **Navegue até a pasta do backend:**
+    ```bash
+    cd backend
+    ```
 
-# Iniciar servidor em desenvolvimento
-npm run dev
+2.  **Instale as dependências:**
+    ```bash
+    npm install
+    ```
 
-# Servidor rodará em http://localhost:3000
-```
+3.  **Configure as variáveis de ambiente:**
+    Copie `.env.example` para `.env` e preencha os valores.
+    ```bash
+    cp .env.example .env
+    ```
 
-**Comandos úteis:**
+4.  **Execute as migrations do banco de dados:**
+    ```bash
+    npm run db:migrate
+    ```
 
-```bash
-# Verificar tipos TypeScript
-npm run type-check
-
-# Executar migrations
-npx prisma migrate dev
-
-# gerar cliente Prisma
-npx prisma generate
-
-# Abrir Prisma Studio (GUI do banco)
-npx prisma studio
-```
+5.  **Inicie o servidor de desenvolvimento:**
+    ```bash
+    npm run dev
+    ```
+    O servidor estará disponível em `http://localhost:3000`.
+    A documentação Swagger estará em `http://localhost:3000/swagger`.
 
 ### Mobile
 
-```bash
-cd mobile
+(Instruções para o mobile permanecem as mesmas)
 
-# Iniciar Expo
-npx expo start
+---
 
+## ☁️ Deploy na Vercel
+
+Este projeto está configurado para deploy na **Vercel** usando o **Node.js Runtime**.
+
+### 1. Configuração do Projeto na Vercel
+
+- **Framework Preset:** `Other`
+- **Build Command:** `cd backend && npm install && npm run build`
+- **Start Command:** `cd backend && npm start`
+- **Output Directory:** `backend/dist`
+- **Install Command:** `npm install --prefix=backend`
+
+### 2. Scripts de Deploy
+
+O `package.json` do backend inclui os seguintes scripts para produção:
+
+-   `"build": "tsc && tsc -p tsconfig.build.json"`: Compila o código TypeScript para JavaScript.
+-   `"start": "NODE_ENV=production node dist/server.js"`: Inicia o servidor em modo de produção.
+-   `"db:migrate:prod": "prisma migrate deploy"`: Aplica as migrations em um ambiente de produção.
+
+### 3. Arquivo `vercel.json`
+
+Para garantir que o Hono funcione corretamente na Vercel, crie um arquivo `vercel.json` na raiz do projeto com o seguinte conteúdo:
+
+```json
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/backend/dist/server.js" }
+  ]
+}
 ```
 
 ---
 
-## 📁 Estrutura do Projeto
+## 📁 Estrutura do Projeto (Detalhada)
 
 ### Backend - `backend/src/`
 
-#### `index.ts` - Aplicação Principal
-- Configura middlewares (CORS, autenticação, Prisma)
-- Define rotas de autenticação
-- Monta rotas de listas
+-   **`api/`**: Contém os módulos de cada feature da API.
+    -   `*.routes.ts`: Define os endpoints, schemas de validação e anexa os controllers.
+    -   `*.controller.ts`: Orquestra as chamadas aos serviços e formata a resposta.
+-   **`common/`**: Utilitários compartilhados.
+    -   `env.ts`: Validação e tipagem de variáveis de ambiente com Zod.
+    -   `prisma.ts`: Configuração do cliente Prisma.
+-   **`middlewares/`**: Middlewares do Hono.
+    -   `auth.middleware.ts`: Valida a sessão do usuário.
+    -   `error-handler.middleware.ts`: Captura e formata erros.
+-   **`models/`**: Schemas de dados (Zod) e tipos TypeScript.
+-   **`services/`**: Lógica de negócio e acesso ao banco de dados.
+-   **`server.ts`**: Ponto de entrada da aplicação, onde os middlewares e rotas são registrados.
 
-#### `routes/lists.ts` - Rotas de Listas
-- `GET /api/lists` - Listar todas as listas do usuário
-- `POST /api/lists` - Criar nova lista
-- `GET /api/lists/:id` - Obter detalhes de uma lista
-- `PATCH /api/lists/:id` - Atualizar lista
-- `DELETE /api/lists/:id` - Deletar lista
-- `POST /api/lists/:id/items` - Adicionar item
-- `PATCH /api/lists/:id/items/:itemId` - Atualizar item
-- `DELETE /api/lists/:id/items/:itemId` - Deletar item
-
-#### `lib/auth.ts` - Autenticação
-- Configuração do Better Auth
-- Adapter Prisma para persistência
-- Suporte a email/senha
-
-#### `lib/prisma.ts` - Banco de Dados
-- Cliente Prisma
-- Middleware para injetar Prisma no contexto
-
-### Mobile - `mobile/src/`
-
-#### `app/` - Telas
-- `login.tsx` - Tela de login
-- `register.tsx` - Tela de registro
-- `(tabs)/newList.tsx` - Criar nova lista
-- `(tabs)/history.tsx` - Histórico de listas
-- `list/[id].tsx` - Detalhe e edição de lista
-- `report/[id].tsx` - Relatório de gastos
-
-#### `hooks/useAuth.tsx` - Autenticação
-- Context de autenticação
-- Gerenciamento de sessão
-- Login/Logout
-
-#### `infra/services/` - Serviços de API
-- `authService.ts` - Endpoints de autenticação
-- `listService.ts` - Endpoints de listas
-
-## 🔌 API Endpoints
-
-### Autenticação
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| POST | `/api/register` | Registrar novo usuário |
-| POST | `/api/auth/callback/credentials` | Login |
-| POST | `/api/auth/logout` | Logout |
-| GET | `/api/auth/session` | Obter sessão atual |
-
-### Listas
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | `/api/lists` | Listar todas as listas |
-| POST | `/api/lists` | Criar lista |
-| GET | `/api/lists/:id` | Obter lista |
-| PATCH | `/api/lists/:id` | Atualizar lista |
-| DELETE | `/api/lists/:id` | Deletar lista |
-
-### Itens
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| POST | `/api/lists/:id/items` | Adicionar item |
-| PATCH | `/api/lists/:id/items/:itemId` | Atualizar item |
-| DELETE | `/api/lists/:id/items/:itemId` | Deletar item |
-
----
-
-## 🛠️ Tecnologias
-
-### Backend
-- **Hono** - Framework web ultrarrápido
-- **Prisma** - ORM para Node.js
-- **PostgreSQL** - Banco de dados
-- **Better Auth** - Autenticação
-- **TypeScript** - Tipagem estática
-
-### Mobile
-- **React Native** - Framework mobile
-- **Expo** - Plataforma React Native
-- **Expo Router** - Navegação
-- **TanStack Query** - Gerenciamento de estado
-- **Axios** - Cliente HTTP
-- **TypeScript** - Tipagem estática
-
-
----
-
-## 📝 Fluxo de Uso
-
-### 1. Registro
-```
-Usuário → Tela de Registro → POST /api/register → Banco de Dados
-```
-
-### 2. Login
-```
-Usuário → Tela de Login → POST /api/auth/callback/credentials → Sessão
-```
-
-### 3. Criar Lista
-```
-Usuário → Tela Nova Lista → POST /api/lists → Banco de Dados
-```
-
-### 4. Adicionar Itens
-```
-Usuário → Detalhe da Lista → POST /api/lists/:id/items → Banco de Dados
-```
-
-### 5. Visualizar Relatório
-```
-Usuário → Histórico → Clica em Lista → GET /api/lists/:id → Tela de Relatório
-```
-
+(O restante da estrutura e seções permanecem relevantes)

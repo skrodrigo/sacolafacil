@@ -2,7 +2,7 @@ import type { Context, Next } from 'hono';
 import { PrismaClient } from '@/generated/prisma/client.js';
 import { PrismaPg } from '@prisma/adapter-pg';
 import "dotenv/config";
-import { env } from '@/lib/env.js';
+import { env } from './env.js';
 
 const databaseUrl = env.DATABASE_URL;
 
