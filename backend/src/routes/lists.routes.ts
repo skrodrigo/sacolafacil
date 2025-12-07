@@ -1,8 +1,8 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import { listService } from '@/services/list.service.js';
-import { ListSchema, CreateListSchema, UpdateListSchema, ListItemSchema, CreateListItemSchema, UpdateListItemSchema } from '@/dtos/lists.dto.js';
-import { ErrorSchema } from '@/dtos/errors.dto.js';
-import type { AppVariables } from './routes.js';
+import { listService } from '@/services/list.service';
+import { ListSchema, CreateListSchema, UpdateListSchema, ListItemSchema, CreateListItemSchema, UpdateListItemSchema } from '@/dtos/lists.dto';
+import { ErrorSchema } from '@/dtos/errors.dto';
+import type { AppVariables } from './routes';
 
 const lists = new OpenAPIHono<{ Variables: AppVariables }>();
 

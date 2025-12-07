@@ -1,9 +1,9 @@
-import { prisma } from '@/common/prisma.js';
-import { env } from '@/common/env.js';
+import { prisma } from '@/common/prisma';
+import { env } from '@/common/env';
 import { hash, compare } from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { HTTPException } from 'hono/http-exception';
-import type { RegisterData, LoginData } from '@/dtos/auth.dto.js';
+import type { RegisterData, LoginData } from '@/dtos/auth.dto';
 
 const SALT_ROUNDS = 10;
 

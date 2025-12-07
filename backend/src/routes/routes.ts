@@ -1,10 +1,10 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { swaggerUI } from '@hono/swagger-ui';
-import type { PrismaClient } from '@/generated/prisma/client.js';
-import { authMiddleware } from '@/middlewares/auth.middleware.js';
-import listRouter from './lists.routes.js';
-import authRouter from './auth.routes.js';
-import type { User } from '@/generated/prisma/client.js';
+import type { PrismaClient } from '@/generated/prisma/client';
+import { authMiddleware } from '@/middlewares/auth.middleware';
+import listRouter from './lists.routes';
+import authRouter from './auth.routes';
+import type { User } from '@/generated/prisma/client';
 
 export type AppVariables = {
   prisma: PrismaClient;

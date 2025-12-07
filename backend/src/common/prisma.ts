@@ -1,8 +1,8 @@
 import type { Context, Next } from 'hono';
-import { PrismaClient } from '@/generated/prisma/client.js';
+import { PrismaClient } from '@/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import "dotenv/config";
-import { env } from './env.js';
+import { env } from './env';
 
 const databaseUrl = env.DATABASE_URL;
 

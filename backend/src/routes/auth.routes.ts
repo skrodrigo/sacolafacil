@@ -1,7 +1,7 @@
 import { OpenAPIHono, createRoute } from '@hono/zod-openapi';
-import { authService } from '@/services/auth.service.js';
-import { RegisterSchema, LoginSchema } from '@/dtos/auth.dto.js';
-import { UserSchema } from '@/dtos/users.dto.js';
+import { authService } from '@/services/auth.service';
+import { RegisterSchema, LoginSchema } from '@/dtos/auth.dto';
+import { UserSchema } from '@/dtos/users.dto';
 import { z } from 'zod';
 
 const authRouter = new OpenAPIHono();
