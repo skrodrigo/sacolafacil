@@ -4,10 +4,20 @@
     "module": "NodeNext",
     "strict": true,
     "skipLibCheck": true,
-    "types": ["node"],
+    "types": [
+      "@types/node"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
     "outDir": "./dist"
   },
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }

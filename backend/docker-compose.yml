@@ -1,0 +1,10 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: listinha
+      POSTGRES_USER: listinha
+      POSTGRES_PASSWORD: listinha
+    ports:
+      - "5432:5432"
