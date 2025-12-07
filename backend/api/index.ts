@@ -1,6 +1,6 @@
 import { handle } from 'hono/vercel';
-import app from '@/routes/routes';
-import { withPrisma } from '@/common/prisma';
+import app from './../src/routes/routes.js';
+import { withPrisma } from './../src/common/prisma.js';
 
 app.use('*', withPrisma);
 

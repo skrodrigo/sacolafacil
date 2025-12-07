@@ -1,5 +1,5 @@
-import { listRepository } from '@/repositories/lists.repository';
-import type { CreateListData, UpdateListData, CreateListItemData, UpdateListItemData } from '@/dtos/lists.dto';
+import { listRepository } from './../repositories/lists.repository.js';
+import type { CreateListData, UpdateListData, CreateListItemData, UpdateListItemData } from './../dtos/lists.dto.js';
 
 class ListService {
   async getAllListsForUser(userId: string) {

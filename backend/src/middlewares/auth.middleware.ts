@@ -1,5 +1,5 @@
-import { prisma } from '@/common/prisma';
-import { env } from '@/common/env';
+import { prisma } from './../common/prisma.js';
+import { env } from './../common/env.js';
 import jwt from 'jsonwebtoken';
 import { HTTPException } from 'hono/http-exception';
 import type { Context, Next } from 'hono';

@@ -1,5 +1,5 @@
-import { prisma } from '@/common/prisma';
-import { Prisma, User } from '@/generated/prisma/client';
+import { prisma } from './../common/prisma.js';
+import { Prisma, User } from '@/generated/prisma/client.js';
 
 export const authRepository = {
   async findUserByEmail(email: string): Promise<User | null> {

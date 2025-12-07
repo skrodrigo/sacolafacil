@@ -1,6 +1,6 @@
-import { PrismaClient } from '@/generated/prisma/client';
-import { prisma } from '@/common/prisma';
-import type { CreateListData, UpdateListData, CreateListItemData, UpdateListItemData } from '@/dtos/lists.dto';
+import { PrismaClient } from './../generated/prisma/client.js';
+import { prisma } from './../common/prisma.js';
+import type { CreateListData, UpdateListData, CreateListItemData, UpdateListItemData } from './../dtos/lists.dto.js';
 
 class ListRepository {
   constructor(private prisma: PrismaClient) { }
