@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as FileSystem from 'expo-file-system';
-import { writeAsStringAsync } from 'expo-file-system/legacy';
-import * as Sharing from 'expo-sharing';
+import * as Print from 'expo-print';
+import { shareAsync } from 'expo-sharing';
 import { useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { listService } from '@/infra/services';
@@ -41,22 +40,32 @@ export default function ReportScreen() {
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      const pdfBlob = await listService.exportPdf(id!);
-      const fileUri = (FileSystem as any).documentDirectory + `${list.name || 'list'}.pdf`;
+      const itemsHtml = list.items.map(item => `
+        <div style="border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between;">
+          <span>${item.quantity}x ${item.name}</span>
+          <span>${(item.value * item.quantity).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+        </div>
+      `).join('');
 
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        if (reader.result) {
-          const base64 = (reader.result as string).split(',')[1];
-          await writeAsStringAsync(fileUri, base64, {
-            encoding: 'base64' as any,
-          });
-          await Sharing.shareAsync(fileUri);
-        }
-      };
-      reader.readAsDataURL(pdfBlob);
+      const html = `
+        <html>
+          <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          </head>
+          <body style="font-family: Arial, sans-serif; text-align: center;">
+            <h1 style="color: #18C260;">${list.name || 'Lista de Compras'}</h1>
+            <div style="margin-top: 20px;">${itemsHtml}</div>
+            <div style="margin-top: 20px; font-weight: bold; font-size: 1.2em;">
+              Total: ${totalSpent.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            </div>
+          </body>
+        </html>
+      `;
+
+      const { uri } = await Print.printToFileAsync({ html });
+      await shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
     } catch (error) {
-      console.error(error);
+      console.error('Error generating PDF:', error);
     } finally {
       setIsExporting(false);
     }

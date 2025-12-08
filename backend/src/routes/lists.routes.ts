@@ -47,17 +47,6 @@ const updateListRoute = createRoute({
   },
 });
 
-const exportListRoute = createRoute({
-  method: 'get',
-  path: '/{id}/export',
-  tags: ['Lists'],
-  request: { params: z.object({ id: z.string() }) },
-  responses: {
-    200: { description: 'Export a list as PDF', content: { 'application/pdf': { schema: z.string() } } },
-    404: { description: 'List not found', content: { 'application/json': { schema: ErrorSchema } } },
-  },
-});
-
 const deleteListRoute = createRoute({
   method: 'delete',
   path: '/{id}',
@@ -179,23 +168,6 @@ lists.openapi(deleteItemRoute, async (c) => {
   try {
     await listService.deleteListItem(user!.id, listId, itemId);
     return c.json({ success: true }, 200);
-  } catch (error: any) {
-    return c.json({ error: error.message }, 404);
-  }
-});
-
-lists.get(exportListRoute.getRoutingPath(), async (c) => {
-  const user = c.get('user');
-  const { id } = c.req.param();
-  try {
-    const pdfBuffer = await listService.exportListToPdf(user!.id, id);
-    return new Response(new Uint8Array(pdfBuffer), {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="list.pdf"`,
-      },
-      status: 200,
-    });
   } catch (error: any) {
     return c.json({ error: error.message }, 404);
   }
