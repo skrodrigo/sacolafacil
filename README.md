@@ -1,31 +1,16 @@
 # 🛒 Sacola Fácil - Gerenciador de Listas de Compras
 
-Um aplicativo mobile completo para gerenciar listas de compras com orçamento, construído com um backend moderno e uma arquitetura limpa.
+Um aplicativo mobile completo para gerenciar listas de compras com orçamento.
 
 ---
 
 ## 📋 Índice
 
-- [Visão Geral](#-visão-geral)
 - [Tecnologias](#-tecnologias)
 - [Arquitetura do Backend](#-arquitetura-do-backend)
 - [Pré-requisitos](#-pré-requisitos)
 - [Como Executar](#-como-executar)
 - [Scripts Disponíveis](#-scripts-disponíveis)
-
----
-
-## 🎯 Visão Geral
-
--   **`backend`**: Uma API RESTful construída com **Hono** e **Prisma**, seguindo princípios de Clean Architecture. Fornece endpoints para autenticação de usuários e gerenciamento completo de listas de compras.
--   **`mobile`**: Um aplicativo **React Native** (com Expo) que consome a API do backend, oferecendo uma interface de usuário intuitiva para gerenciar as listas.
-
-### Funcionalidades
-
-- ✅ Autenticação segura de usuários com **JWT**.
-- ✅ Criação, visualização, atualização e exclusão de listas de compras com orçamento.
-- ✅ Adição, edição e remoção de itens nas listas.
-- ✅ Documentação de API automática com **Swagger UI**.
 
 ---
 
@@ -36,7 +21,6 @@ Um aplicativo mobile completo para gerenciar listas de compras com orçamento, c
 | **Backend**       | Hono, Node.js, TypeScript, Prisma, PostgreSQL, Zod, JWT, bcrypt |
 | **Mobile**        | React Native, Expo, TypeScript, NativeWind, TanStack Query |
 | **Banco de Dados**  | PostgreSQL                               |
-| **DevOps**        | Docker, Vercel (sugerido)                |
 
 ---
 
@@ -144,4 +128,3 @@ A documentação da API (Swagger UI) estará em `http://localhost:3000/swagger`.
 -   `npm run db:down`: Para o container do PostgreSQL.
 -   `npm run db:migrate`: Aplica as migrations do Prisma.
 -   `npm run db:studio`: Abre o Prisma Studio para visualizar e editar os dados.
-

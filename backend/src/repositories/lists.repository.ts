@@ -40,6 +40,7 @@ class ListRepository {
   async findItemById(listId: string, itemId: string) {
     return this.prisma.listItem.findFirst({ where: { id: itemId, listId } });
   }
+
 }
 
 export const listRepository = new ListRepository(prisma);

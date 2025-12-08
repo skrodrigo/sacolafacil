@@ -1,6 +1,10 @@
-import { View, Text, FlatList, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
+import * as FileSystem from 'expo-file-system';
+import { writeAsStringAsync } from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
+import { useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { listService } from '@/infra/services';
 import { List } from '@/types';
@@ -8,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ReportScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
+  const [isExporting, setIsExporting] = useState(false);
 
   const {
     data: list,
@@ -33,6 +37,30 @@ export default function ReportScreen() {
 
   const totalSpent = list.items.reduce((acc, item) => acc + item.value * item.quantity, 0);
   const totalItems = list.items.reduce((acc, item) => acc + item.quantity, 0);
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const pdfBlob = await listService.exportPdf(id!);
+      const fileUri = (FileSystem as any).documentDirectory + `${list.name || 'list'}.pdf`;
+
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        if (reader.result) {
+          const base64 = (reader.result as string).split(',')[1];
+          await writeAsStringAsync(fileUri, base64, {
+            encoding: 'base64' as any,
+          });
+          await Sharing.shareAsync(fileUri);
+        }
+      };
+      reader.readAsDataURL(pdfBlob);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} className="flex-1 bg-[#f6f6f6] p-5">
@@ -69,15 +97,17 @@ export default function ReportScreen() {
 
       <TouchableOpacity
         className="mt-5 items-center rounded-lg bg-[#18C260] p-4"
-        onPress={() => router.replace('/(tabs)/history')}
+        onPress={handleExport}
+        disabled={isExporting}
       >
-        <View className='flex-row gap-2 justify-center items-center'>
-          <Ionicons name='document-text' size={16} color='#1f2937' />
-          <Text className="text-xl text-gray-800">Exportar</Text>
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.replace('/(tabs)/history')} className="ml-4">
-        <Ionicons name="close" size={24} color="#FFFFFF" />
+        {isExporting ? (
+          <ActivityIndicator color="#1f2937" />
+        ) : (
+          <View className='flex-row gap-2 justify-center items-center'>
+            <Ionicons name='document-text' size={16} color='#1f2937' />
+            <Text className="text-xl text-gray-800">Exportar</Text>
+          </View>
+        )}
       </TouchableOpacity>
     </SafeAreaView>
   );

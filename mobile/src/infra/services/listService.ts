@@ -51,4 +51,11 @@ export const listService = {
   async deleteItem(listId: string, itemId: string): Promise<void> {
     await api.delete(`/api/lists/${listId}/items/${itemId}`);
   },
+
+  async exportPdf(listId: string): Promise<Blob> {
+    const response = await api.get(`/api/lists/${listId}/export`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
 };
