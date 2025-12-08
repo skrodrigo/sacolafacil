@@ -15,6 +15,8 @@ import {
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { listService } from '@/infra/services';
+import { offlineListService } from '@/infra/services/offline';
+import { useConnectivity } from '@/context/ConnectivityContext';
 import { List, ListItem } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,6 +28,7 @@ export default function ListScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { isOffline } = useConnectivity();
 
   const [newItemName, setNewItemName] = useState('');
   const [newItemQty, setNewItemQty] = useState('1');
@@ -38,14 +41,35 @@ export default function ListScreen() {
     data: list,
     isLoading,
     isError,
-  } = useQuery<List>({
+  } = useQuery<List | null>({
     queryKey: ['list', id],
-    queryFn: () => listService.getById(id!),
+    queryFn: () => {
+      if (isOffline || id?.startsWith('offline-')) {
+        return offlineListService.getById(id!);
+      }
+      return listService.getById(id!);
+    },
   });
 
   const addItemMutation = useMutation({
-    mutationFn: (newItem: Omit<ListItem, 'id' | 'createdAt' | 'updatedAt' | 'listId'>) =>
-      listService.addItem(id!, newItem.name, newItem.quantity, newItem.value),
+    mutationFn: async (newItem: Omit<ListItem, 'id' | 'createdAt' | 'updatedAt' | 'listId'>) => {
+      if (isOffline || id?.startsWith('offline-')) {
+        const currentList = await offlineListService.getById(id!);
+        if (currentList) {
+          const itemToAdd: ListItem = {
+            ...newItem,
+            id: `offline-item-${Date.now()}`,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            listId: id!,
+          };
+          currentList.items.push(itemToAdd);
+          return offlineListService.update(id!, currentList);
+        }
+      } else {
+        return listService.addItem(id!, newItem.name, newItem.quantity, newItem.value);
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['list', id] });
       setNewItemName('');
@@ -58,7 +82,17 @@ export default function ListScreen() {
   });
 
   const deleteItemMutation = useMutation({
-    mutationFn: (itemId: string) => listService.deleteItem(id!, itemId),
+    mutationFn: async (itemId: string) => {
+      if (isOffline || id?.startsWith('offline-')) {
+        const currentList = await offlineListService.getById(id!);
+        if (currentList) {
+          currentList.items = currentList.items.filter((item) => item.id !== itemId);
+          return offlineListService.update(id!, currentList);
+        }
+      } else {
+        return listService.deleteItem(id!, itemId);
+      }
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['list', id] }),
     onError: () => toast.error('Erro', { description: 'Não foi possível remover o item.' }),
   });
@@ -513,7 +547,6 @@ const styles = StyleSheet.create({
   confirmButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: 'bold',
   },
   stepperContainer: {
     flexDirection: 'row',
@@ -527,7 +560,6 @@ const styles = StyleSheet.create({
   },
   stepperValue: {
     fontSize: 24,
-    fontWeight: 'bold',
     marginHorizontal: 20,
     color: '#1f2937',
   },
@@ -541,6 +573,5 @@ const styles = StyleSheet.create({
   nextButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: 'bold',
   },
 });

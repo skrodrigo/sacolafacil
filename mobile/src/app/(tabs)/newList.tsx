@@ -8,11 +8,15 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { toast } from 'sonner-native';
 import { useRouter } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { listService } from '@/infra/services';
+import { offlineListService } from '@/infra/services/offline';
+import { useConnectivity } from '@/context/ConnectivityContext';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import CurrencyInput from 'react-native-currency-input';
@@ -23,9 +27,15 @@ export default function NewListScreen() {
   const [newListId, setNewListId] = useState<string | null>(null);
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { isOffline } = useConnectivity();
 
   const { mutate: createList, isPending } = useMutation({
-    mutationFn: (data: { name: string; budget: number }) => listService.create(data),
+    mutationFn: (data: { name: string; budget: number }) => {
+      if (isOffline) {
+        return offlineListService.create(data);
+      }
+      return listService.create(data);
+    },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['lists'] });
       if (data?.id) {
@@ -58,49 +68,54 @@ export default function NewListScreen() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.container}>
-        <Text style={styles.title}>Crie uma nova lista</Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={{ flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={styles.title}>Crie uma nova lista</Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Nome da lista"
-          placeholderTextColor="#A3A3A3"
-          value={name}
-          onChangeText={setName}
-        />
+          <TextInput
+            style={styles.input}
+            placeholder="Nome da lista"
+            placeholderTextColor="#A3A3A3"
+            value={name}
+            onChangeText={setName}
+          />
 
-        <CurrencyInput
-          value={budget}
-          onChangeValue={(value) => {
-            setBudget(value);
-            Haptics.selectionAsync();
-          }}
-          style={styles.input}
-          prefix="R$ "
-          delimiter="."
-          separator=","
-          precision={2}
-          placeholder="R$ 0,00"
-          placeholderTextColor="#A3A3A3"
-        />
+          <CurrencyInput
+            value={budget}
+            onChangeValue={(value) => {
+              setBudget(value);
+              Haptics.selectionAsync();
+            }}
+            style={styles.input}
+            prefix="R$ "
+            delimiter="."
+            separator=","
+            precision={2}
+            placeholder="R$ 0,00"
+            placeholderTextColor="#A3A3A3"
+          />
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleStartList}
-          disabled={isPending}
-        >
-          {isPending ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <>
-              <Text style={styles.buttonText}>Iniciar Nova Lista</Text>
-              <Ionicons name="arrow-forward" size={16} color="white" />
-            </>
-          )}
-        </TouchableOpacity>
-      </View>
-    </TouchableWithoutFeedback>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleStartList}
+            disabled={isPending}
+          >
+            {isPending ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <>
+                <Text style={styles.buttonText}>Iniciar Nova Lista</Text>
+                <Ionicons name="arrow-forward" size={16} color="white" />
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 

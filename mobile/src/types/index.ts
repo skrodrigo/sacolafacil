@@ -26,6 +26,7 @@ export interface List {
   budget: number;
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
-  userId: string;
+  userId?: string;
   items: ListItem[];
+  isOffline?: boolean;
 }

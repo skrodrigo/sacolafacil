@@ -14,6 +14,7 @@ import { toast } from 'sonner-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
+import { useConnectivity } from '@/context/ConnectivityContext';
 import { authService } from '@/infra/services';
 
 export default function LoginScreen() {
@@ -22,6 +23,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { signIn } = useAuth();
+  const { setOfflineMode } = useConnectivity();
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -47,6 +49,10 @@ export default function LoginScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOfflineMode = async () => {
+    await setOfflineMode(true);
   };
 
   return (
@@ -86,6 +92,10 @@ export default function LoginScreen() {
             ) : (
               <Text style={styles.buttonText}>Entrar</Text>
             )}
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.secondaryButton} onPress={handleOfflineMode}>
+            <Text style={styles.secondaryButtonText}>Entrar Offline</Text>
           </TouchableOpacity>
 
           <View style={styles.footer}>
@@ -141,6 +151,20 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#FFFFFF',
+    fontSize: 16,
+  },
+  secondaryButton: {
+    width: '100%',
+    backgroundColor: 'transparent',
+    borderColor: '#18C260',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  secondaryButtonText: {
+    color: '#18C260',
     fontSize: 16,
   },
   footer: {

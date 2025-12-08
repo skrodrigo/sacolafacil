@@ -6,6 +6,7 @@ import { shareAsync } from 'expo-sharing';
 import { useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { listService } from '@/infra/services';
+import { offlineListService } from '@/infra/services/offline';
 import { List } from '@/types';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -17,9 +18,14 @@ export default function ReportScreen() {
     data: list,
     isLoading,
     isError,
-  } = useQuery<List>({
+  } = useQuery<List | null>({
     queryKey: ['list', id],
-    queryFn: () => listService.getById(id!),
+    queryFn: () => {
+      if (id?.startsWith('offline-')) {
+        return offlineListService.getById(id);
+      }
+      return listService.getById(id!);
+    },
   });
 
   if (isLoading) {
@@ -55,7 +61,7 @@ export default function ReportScreen() {
           <body style="font-family: Arial, sans-serif; text-align: center;">
             <h1 style="color: #18C260;">${list.name || 'Lista de Compras'}</h1>
             <div style="margin-top: 20px;">${itemsHtml}</div>
-            <div style="margin-top: 20px; font-weight: bold; font-size: 1.2em;">
+            <div style="margin-top: 20px; ; font-size: 1.2em;">
               Total: ${totalSpent.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
             </div>
           </body>
@@ -107,7 +113,7 @@ export default function ReportScreen() {
       <TouchableOpacity
         className="mt-5 items-center rounded-lg bg-[#18C260] p-4"
         onPress={handleExport}
-        disabled={isExporting}
+        disabled={isExporting || list.isOffline}
       >
         {isExporting ? (
           <ActivityIndicator color="#1f2937" />

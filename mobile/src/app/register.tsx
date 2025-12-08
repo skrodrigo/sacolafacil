@@ -113,7 +113,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
     marginBottom: 40,
     color: '#1f2937',
   },
@@ -137,7 +136,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: 'bold',
   },
   footer: {
     flexDirection: 'row',
@@ -147,7 +145,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   link: {
-    fontWeight: 'bold',
     color: '#18C260',
   },
 });

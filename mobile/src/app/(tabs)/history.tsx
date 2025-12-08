@@ -1,19 +1,29 @@
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StatusBar } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { listService } from '@/infra/services';
+import { offlineListService } from '@/infra/services/offline';
 import { List } from '@/types';
 import { useRouter } from 'expo-router';
+import { useConnectivity } from '@/context/ConnectivityContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HistoryScreen() {
   const router = useRouter();
+  const { isOffline } = useConnectivity();
   const {
     data: lists,
     isLoading,
     isError,
   } = useQuery<List[]>({
     queryKey: ['lists'],
-    queryFn: () => listService.getAll(),
+    queryFn: async () => {
+      if (isOffline) {
+        return offlineListService.getAll();
+      }
+      const onlineLists = await listService.getAll();
+      const offlineLists = await offlineListService.getAll();
+      return [...onlineLists, ...offlineLists].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    },
   });
 
   if (isLoading) {
@@ -39,9 +49,16 @@ export default function HistoryScreen() {
       <TouchableOpacity
         className="mb-4 rounded-lg bg-white p-4 "
         onPress={() => router.push(`/report/${item.id}`)}>
-        <View className="flex-row justify-between">
-          <Text className="flex-1 text-xl font-bold text-gray-800">{item.name}</Text>
-          <Text style={{ color: budgetColor }} className="text-lg font-semibold">
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center">
+            <Text className="flex-1 text-xl  text-gray-800">{item.name}</Text>
+            {item.isOffline && (
+              <View className="ml-2 rounded-md bg-gray-200 px-2 py-1">
+                <Text className="text-xs text-gray-500">OFFLINE</Text>
+              </View>
+            )}
+          </View>
+          <Text style={{ color: budgetColor }} className="text-lg ">
             {totalSpent.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
           </Text>
         </View>
