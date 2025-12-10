@@ -6,13 +6,10 @@ import { Toaster } from 'sonner-native';
 import '../../global.css';
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useRef } from 'react';
 import { ConnectivityProvider, useConnectivity } from '@/context/ConnectivityContext';
 
 const queryClient = new QueryClient();
-
-SplashScreen.preventAutoHideAsync();
 
 function RootLayoutNav() {
   const { isAuthenticated, loading } = useAuth();
@@ -21,23 +18,18 @@ function RootLayoutNav() {
   const navigationDone = useRef(false);
 
   useEffect(() => {
-    if (loading) return;
-
-    SplashScreen.hideAsync().catch(() => { });
-
-    // Reset navigation flag when auth state changes
-    navigationDone.current = false;
-  }, [loading]);
-
-  useEffect(() => {
     if (loading || navigationDone.current) return;
 
-    if (isAuthenticated || isOffline) {
-      navigationDone.current = true;
-      router.replace('/(tabs)/newList');
-    } else {
-      navigationDone.current = true;
-      router.replace('/login');
+    try {
+      if (isAuthenticated || isOffline) {
+        navigationDone.current = true;
+        router.replace('/(tabs)/newList');
+      } else {
+        navigationDone.current = true;
+        router.replace('/login');
+      }
+    } catch (error) {
+      console.error('Navigation error:', error);
     }
   }, [isAuthenticated, isOffline, loading, router]);
 
@@ -82,8 +74,8 @@ export default function RootLayout() {
       <ConnectivityProvider>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
-            <Toaster richColors invert />
             <RootLayoutNav />
+            <Toaster richColors invert />
           </AuthProvider>
         </QueryClientProvider>
       </ConnectivityProvider>

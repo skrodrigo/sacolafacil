@@ -179,6 +179,16 @@ export default function ReportScreen() {
 
       <View className="mt-5 gap-3">
         <TouchableOpacity
+          className="items-center rounded-lg bg-red-500 p-4"
+          onPress={handleDeleteList}
+        >
+          <View className='flex-row gap-2 justify-center items-center'>
+            <Ionicons name='trash' size={16} color='#fff' />
+            <Text className="text-xl text-white">Deletar Lista</Text>
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           className="items-center rounded-lg bg-[#18C260] p-4"
           onPress={handleExport}
           disabled={isExporting}
@@ -194,12 +204,12 @@ export default function ReportScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          className="items-center rounded-lg bg-red-500 p-4"
-          onPress={handleDeleteList}
+          className="items-center rounded-lg bg-[#6b7280] p-4"
+          onPress={() => router.push(`/list/${id}`)}
         >
           <View className='flex-row gap-2 justify-center items-center'>
-            <Ionicons name='trash' size={16} color='#fff' />
-            <Text className="text-xl text-white">Deletar Lista</Text>
+            <Ionicons name='pencil' size={16} color='#fff' />
+            <Text className="text-xl text-white">Editar Lista</Text>
           </View>
         </TouchableOpacity>
       </View>
